@@ -32,3 +32,13 @@ Then open http://localhost:5173, which should show the hydration error.
 
 When loading `/with-fix`, you should _not_ see the hydration error, but the
 time should be in your local time instead of the timezone that you specified when starting the server.
+
+## How it works
+
+The hack is two parts:
+
+1. The `LocalTime` component, which renders:
+  - A `<time>` element (because semantic HTML rocks) that also includes serialized `Intl.DateTimeFormatOptions` in a `data-options` attribute, along with a unique `id`.
+  - A small `<script>` element to patch up the `textContent` of the rendered `<time>` element using the following helper
+
+2. A helper shim inserted into the document head in `root.tsx` that defines a `__patchLocalTime` function that will update the `textContent` of the element with the given `id` using the `Intl.DateTimeFormatOptions` that were serialized in the elements `data-options` attribute.
