@@ -1,98 +1,34 @@
-# Welcome to React Router!
+# Date / Time Hydration Hack
 
-A modern, production-ready template for building full-stack React applications using React Router.
+If you haven't run into SSR/Hydration issues with dates and times, count yourself lucky.
 
-## Features
+If you _have_, here's one potential method of addressing them:
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+Patch up the DOM _before_ React starts hydrating, so that you essentially trick
+React into thinking that your date/time was SSR-ed using the browser's local
+time zone.
 
-## Getting Started
+> [!NOTE]
+> This relies on the browser's built-in `Intl.DateTimeFormat` API, because it
+> allows the helper shim to be super tiny. Using alternative date/time libraries
+> such as `date-fns` is out of scope for this solution
 
-### Installation
+## How to run
 
-Install the dependencies:
+Make sure you start the app with a `TZ` environment variable set to something
+other than your local timezone. For most people, you can just use:
 
-```bash
-npm install
+```sh
+$ TZ=UTC pnpm dev
 ```
 
-### Development
+If you happen to be in `UTC`, then just set it to something else:
 
-Start the development server with HMR:
-
-```bash
-npm run dev
+```sh
+$ TZ=America/New_York pnpm dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Then open http://localhost:5173, which should show the hydration error.
 
-## Building for Production
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-This template includes three Dockerfiles optimized for different package managers:
-
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
-
-```bash
-# For npm
-docker build -t my-app .
-
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+When loading `/with-fix`, you should _not_ see the hydration error, but the
+time should be in your local time instead of the timezone that you specified when starting the server.
